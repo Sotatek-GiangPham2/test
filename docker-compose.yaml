@@ -1,0 +1,93 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:latest
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: copu
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: 1
+    volumes:
+      - dbdata:/var/lib/mysql
+
+  redis:
+    image: 'redis:6-alpine'
+    platform: linux/x86_64
+    ports:
+      - 6390:6379
+
+  backend:
+    build: .
+    restart: always
+    ports:
+      - 8000:8000
+    environment:
+      # app
+      - NODE_ENV=development
+      - APP_NAME=copu-backend
+      - PORT=8000
+      - WEBHOOK_ENABLE=true
+      - MAIL_ENABLE=false
+
+      # database
+      - DATABASE_TYPE=postgres
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_USERNAME=admin
+      - DATABASE_PASSWORD=1
+      - DATABASE_NAME=copu
+      - DATABASE_LOG_ENABLE=true
+      - DATABASE_LIMIT_CONNECTION=5
+
+      # jwt
+      - JWT_ACCESS_TOKEN_SECRET=access-token-secret
+      - JWT_REFRESH_TOKEN_SECRET=refresh-token-secret
+      - JWT_ACCESS_TOKEN_EXPIRATION_TIME=28800
+      - JWT_REFRESH_TOKEN_EXPIRATION_TIME=604800
+      - JWT_EMAIL_EXPIRATION_TIME=180
+      - USER_SIGNATURE_MESSAGE_TIME=180
+
+      # Mail
+      - MAIL_USER=quynh.pham2@sotatek.com
+      - MAIL_PASS=rqfzjsuqhndceors
+      - MAIL_FROM=quynh.pham2@sotatek.com
+      - MAIL_HOST=smtp.gmail.com
+      - MAIL_PORT=465
+      - MAIL_PASSWORD=123
+
+      # redis
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_DB=0
+
+      # smart contract
+      - CONTRACT_ADDRESS=0x28460Ba051374A3d7454f0F38eE2A76BEcebcb0A
+      - START_BLOCK=6371955
+      - BLOCK_CONFIRMATION=2
+      - SEPOLIA_RPC=https://sepolia.infura.io/v3/84e7f89c2f254b37923f442162eef8b6
+      - CHAIN_ID=11155111
+
+      - SIGNER_PRIVATE_KEY=bae15a5d0506a671bc9f3f7eb7852c104edadcebdb2a4e06df29b8790bd2d267
+      - PAYMENT_EIP712_CHAIN_ID=80002
+      - PAYMENT_EIP712_NAME=Payment
+      - PAYMENT_EIP712_VERSION=1.0
+
+      - MINIMUM_WITHDRAWAL=1
+      - MAXIMUM_WITHDRAWAL=1000
+      - SET_PAUSE=0
+      - FEE_WALLET=0xF692767Bc306D00dd9Cd13180AE6A047a0DFF40f
+      - FEE_RATE=2
+      - BURN_RATE=1
+      - STAKING_RATE=3
+      - STAKING_WALLET=0xF692767Bc306D00dd9Cd13180AE6A047a0DFF40f
+
+      - ADMIN_EMAIL=admin@gmail.com
+      - ADMIN_PASSWORD=Abcd@1234
+
+    depends_on:
+      - postgres
+      - redis
+
+volumes:
+  dbdata:
